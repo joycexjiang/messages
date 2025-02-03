@@ -63,12 +63,32 @@
   }
 }
 
-.animate-scale-in {
-  animation: scaleIn 0.3s cubic-bezier(0.17, 0.67, 0.29, 1) forwards;
-  transform-origin: center right;
+@keyframes slideFromInput {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.animate-scale-in-left {
-  animation: scaleIn 0.3s cubic-bezier(0.17, 0.67, 0.29, 1) forwards;
-  transform-origin: center left;
+@keyframes slideFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-from-input {
+  animation: slideFromInput 0.3s ease-out forwards;
+}
+
+.animate-slide-from-bottom {
+  animation: slideFromBottom 0.3s ease-out forwards;
 }

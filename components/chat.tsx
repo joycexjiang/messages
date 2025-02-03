@@ -163,8 +163,8 @@ export function Chat() {
                     className={cn(
                       "relative max-w-md rounded-2xl px-4 py-2 text-sm",
                       message.senderId === "current"
-                        ? "bg-blue-500 text-white animate-scale-in"
-                        : "bg-gray-100 text-gray-900 animate-scale-in-left",
+                        ? "bg-blue-500 text-white animate-slide-from-input"
+                        : "bg-gray-100 text-gray-900 animate-slide-from-bottom",
                     )}
                   >
                     {currentChat.type === "group" && message.senderId !== "current" && (
