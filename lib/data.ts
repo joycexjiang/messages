@@ -14,8 +14,18 @@ export const users: User[] = [
     isOnline: true,
     avatar: "/images/marcus-avatar.svg"
   },
-  { id: "3", name: "Jordan", isOnline: true },
-  { id: "4", name: "Lou", isOnline: true },
+  { 
+    id: "3", 
+    name: "Jordan", 
+    isOnline: true,
+    avatar: "/images/jordan-avatar.svg"
+  },
+  { 
+    id: "4", 
+    name: "Lou", 
+    isOnline: true,
+    avatar: "/images/lou-avatar.svg"
+  },
 ]
 
 const currentUser: User = {
@@ -38,7 +48,7 @@ const sandraMessages = [
     id: generateId(),
     senderId: "current",
     senderName: "Leo",
-    content: "Sure, what's up?",
+    content: "Heyo!",
     timestamp: Date.now() - 1000 * 60 * 29,
   },
   {
@@ -89,7 +99,7 @@ const groupMessages = [
     id: generateId(),
     senderId: "current",
     senderName: "Leo",
-    content: "Morning everyone!",
+    content: "Heyo!",
     timestamp: Date.now() - 1000 * 60 * 4,
   },
   {

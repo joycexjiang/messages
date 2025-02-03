@@ -1,7 +1,6 @@
 export function TypingIndicator() {
     return (
-      <div className="flex items-center gap-2 text-xs text-gray-500">
-        {/* <span>{name} is typing</span> */}
+      <div className="flex items-center gap-2 text-xs text-gray-500 p-2">
         <div className="flex items-center justify-center gap-[4px]">
           <style>{`
             @keyframes blink {

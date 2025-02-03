@@ -2,13 +2,15 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { cn, generateId } from "@/lib/utils"
 import type { Message, Chat } from "@/lib/types"
-import { ArrowUpIcon } from "lucide-react"
 import { users, initialChats, responses } from "@/lib/data"
-import { TypingIndicator } from "./typing-indicator"
 import Image from "next/image"
+import { ChatNavigation } from "./chat-navigation"
+import { ChatMessages } from "./chat-messages"
+import { ChatInput } from "./chat-input"
+import { generateId } from "@/lib/utils"
 
+// Main Chat Component
 export function Chat() {
   const [chats, setChats] = useState<Chat[]>(initialChats)
   const [activeChat, setActiveChat] = useState<string>("group")
@@ -19,14 +21,16 @@ export function Chat() {
 
   const currentChat = chats.find((chat) => chat.id === activeChat)
 
+  // Scroll to the bottom of the chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
   useEffect(() => {
     scrollToBottom()
-  }, [chats, isTyping, input]) // Added input to dependencies
+  }, [chats, isTyping, input])
 
+  // Handle message submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || !currentChat) return
@@ -44,22 +48,22 @@ export function Chat() {
     )
 
     setInput("")
+    simulateTypingResponse(currentChat)
+  }
 
-    // Simulate typing indicator
-    const currentResponses = currentChat.type === "group" ? responses.group : responses.direct
-    const responderId =
-      currentChat.type === "group"
-        ? (currentChat.participants.find((p) => p.id !== "current")?.id ?? "1")
-        : currentChat.id
-
-    const responderName =
-      currentChat.type === "group" ? users[Math.floor(Math.random() * users.length)].name : currentChat.name
+  // Simulate typing indicator and response
+  const simulateTypingResponse = (currentChat: Chat) => {
+    // For group chats, randomly select a user (excluding current user)
+    const availableUsers = currentChat.participants.filter(p => p.id !== "current")
+    const randomUser = availableUsers[Math.floor(Math.random() * availableUsers.length)]
+    
+    const responderId = currentChat.type === "group" ? randomUser.id : currentChat.id
+    const responderName = currentChat.type === "group" ? randomUser.name : currentChat.name
 
     setIsTyping(true)
     setTypingUser(responderName)
 
-    // Random delay between 4-7 seconds
-    const delay = Math.floor(Math.random() * (7000 - 4000) + 4000)
+    const delay = Math.floor(Math.random() * (3000 - 1000) + 1000)
 
     setTimeout(() => {
       setIsTyping(false)
@@ -69,7 +73,7 @@ export function Chat() {
         id: generateId(),
         senderId: responderId,
         senderName: responderName,
-        content: currentResponses[Math.floor(Math.random() * currentResponses.length)],
+        content: currentChat.type === "group" ? responses.group[Math.floor(Math.random() * responses.group.length)] : responses.direct[Math.floor(Math.random() * responses.direct.length)],
         timestamp: Date.now(),
       }
 
@@ -81,16 +85,25 @@ export function Chat() {
     }, delay)
   }
 
+  // Get avatar content for a message
   const getAvatarContent = (message: Message) => {
     if (message.senderId === "current") {
-      return message.senderName[0]
+      return (
+        <Image
+          src="/images/leo-avatar.svg"
+          alt="Leo"
+          className="h-full w-full rounded-full object-cover"
+          width={32}
+          height={32}
+        />
+      )
     }
 
     const user = users.find((u) => u.id === message.senderId)
     if (user?.avatar) {
       return (
         <Image
-          src={user.avatar || "/placeholder.svg"}
+          src={user.avatar}
           alt={user.name}
           className="h-full w-full rounded-full object-cover"
           width={32}
@@ -102,111 +115,18 @@ export function Chat() {
   }
 
   return (
-    <main className="flex h-svh w-full flex-col bg-white">
-      <nav className="flex items-center gap-2 border-b bg-gray-50/50 px-4 py-2">
-        <button
-          onClick={() => setActiveChat("group")}
-          className={cn(
-            "rounded-full px-4 py-1.5 text-sm font-medium",
-            activeChat === "group" ? "bg-gray-100" : "hover:bg-gray-100",
-          )}
-        >
-          Meeting Room
-        </button>
-        {users.map((user) => (
-          <button
-            key={user.id}
-            onClick={() => setActiveChat(user.id)}
-            className={cn(
-              "group relative flex items-center gap-2 rounded-full px-4 py-1.5 text-sm text-gray-500 hover:bg-gray-100",
-              activeChat === user.id && "bg-gray-100",
-            )}
-          >
-            <span className="relative flex h-2 w-2">
-              <span
-                className={cn(
-                  "absolute inline-flex h-full w-full rounded-full opacity-75",
-                  user.isOnline ? "bg-green-500" : "bg-gray-400",
-                )}
-              />
-              <span
-                className={cn(
-                  "relative inline-flex h-2 w-2 rounded-full",
-                  user.isOnline ? "bg-green-500" : "bg-gray-400",
-                )}
-              />
-            </span>
-            {user.name}
-          </button>
-        ))}
-      </nav>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-4 py-4">
-          {currentChat?.messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center p-4">
-              <p className="text-center text-sm text-gray-500">No messages yet. Start a conversation!</p>
-            </div>
-          ) : (
-            <>
-              {currentChat?.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex items-start gap-3 px-4",
-                    message.senderId === "current" ? "flex-row-reverse" : "flex-row",
-                  )}
-                >
-                  <div className="relative flex h-8 w-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-gray-100 text-center">
-                    {getAvatarContent(message)}
-                  </div>
-                  <div
-                    className={cn(
-                      "relative max-w-md rounded-2xl px-4 py-2 text-sm",
-                      message.senderId === "current"
-                        ? "bg-blue-500 text-white animate-slide-from-input"
-                        : "bg-gray-100 text-gray-900 animate-slide-from-bottom",
-                    )}
-                  >
-                    {currentChat.type === "group" && message.senderId !== "current" && (
-                      <div className="mb-1 text-xs font-medium text-gray-500">{message.senderName}</div>
-                    )}
-                    {message.content}
-                  </div>
-                </div>
-              ))}
-              {isTyping && typingUser && (
-                <div className="flex items-start gap-3 px-4">
-                  <div className="relative flex h-8 w-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-gray-100 text-center">
-                    {typingUser[0]}
-                  </div>
-                  <div className="relative max-w-md rounded-2xl px-4 py-2 text-sm bg-gray-100">
-                    <TypingIndicator />
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
+    <main className="flex h-svh w-full flex-col bg-[#F2F2F2] overflow-hidden">
+      <ChatNavigation activeChat={activeChat} setActiveChat={setActiveChat} />
+      <div className="flex-1 min-h-0">
+        <ChatMessages
+          currentChat={currentChat ?? initialChats[0]}
+          isTyping={isTyping}
+          typingUser={typingUser}
+          messagesEndRef={messagesEndRef}
+          getAvatarContent={getAvatarContent}
+        />
       </div>
-      <form onSubmit={handleSubmit} className="border-t bg-white px-4 py-4">
-        <div className="relative flex items-center rounded-lg border bg-white px-4 py-2 shadow-sm">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
-            className="min-h-[20px] w-full resize-none bg-transparent text-sm focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="h-8 w-8 shrink-0 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
-            disabled={!input.trim()}
-          >
-            <ArrowUpIcon size={16} className="m-auto" />
-          </button>
-        </div>
-      </form>
+      <ChatInput input={input} setInput={setInput} handleSubmit={handleSubmit} />
     </main>
   )
 }
